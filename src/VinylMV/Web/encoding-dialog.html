@@ -1,0 +1,40 @@
+  <dialog id="encodingDialog" class="modal encoding-modal">
+    <div class="modal-heading"><div><span class="eyebrow">控制画质、体积与生成速度</span><h2>导出编码设置</h2></div><button class="icon-button" data-close="encodingDialog" aria-label="关闭编码设置">×</button></div>
+    <p class="modal-description">选择文件格式、视频与音频编码。设置将在下一次生成时生效，当前预览不受影响。</p>
+    <div class="encoding-detection"><p id="encodingCapabilities" role="status"></p><button id="refreshEncoders" class="button quiet">重新检测编码器</button></div>
+    <div class="encoding-grid">
+      <h3 class="encoding-section">文件与视频编码</h3>
+      <label>文件格式<select id="encContainer"><option value="mp4">MP4</option><option value="mkv">MKV</option><option value="mov">MOV</option><option value="webm">WebM</option></select><small>不兼容的编码选项会禁用。改变格式时会选择兼容的编码。</small></label>
+      <label>视频编码<select id="encCodec" data-encoding="codec"><option value="h264">H.264 · 广泛兼容</option><option value="hevc">H.265 · 高压缩率</option><option value="av1">AV1 · 新一代压缩</option><option value="vp9">VP9 · 网络视频</option><option value="vp8">VP8 · 兼容 WebM</option><option value="prores">ProRes · 后期剪辑</option><option value="ffv1">FFV1 · 无损保存</option></select></label>
+      <label>编码器<select id="encEncoder" data-encoding="encoder"><option value="software">处理器软件编码</option><option value="nvenc">英伟达 NVENC</option><option value="qsv">英特尔 QSV</option><option value="amf">AMD AMF</option></select><small>硬件编码需要对应显卡和驱动，检测会实际编码短帧验证。</small></label>
+      <label>像素格式 / 位深<select id="encPixelFormat" data-encoding="pixelFormat"><option value="auto">自动匹配编码器</option><option value="yuv420p">4:2:0 · 8 位</option><option value="yuv420p10le">4:2:0 · 10 位</option><option value="yuv422p10le">4:2:2 · 10 位</option><option value="yuv444p10le">4:4:4 · 10 位</option></select><small>10 位输出不代表将普通素材转换为 HDR。</small></label>
+      <h3 class="encoding-section">画质与码率</h3>
+      <label>码率模式<select id="encMode" data-encoding="rateControl"><option value="crf">恒定画质 · 动态码率</option><option value="vbr">动态码率 · 指定平均值</option><option value="cbr">固定目标码率</option></select></label>
+      <label>画质值<input id="encCrf" data-encoding="crf" type="number" min="0" max="63" step=".5"><small id="encodingQualityHint"></small></label>
+      <p class="encoding-explanation" id="encodingModeHint"></p>
+      <label>视频目标码率（Mbps）<input id="encBitrate" data-encoding="bitrateMbps" type="number" min=".1" max="200" step=".1"></label>
+      <label>峰值码率（Mbps）<input id="encMaxBitrate" data-encoding="maxBitrateMbps" type="number" min="0" max="300" step=".1"><small>0 表示不额外限制。</small></label>
+      <label>码率缓冲时长（秒）<input id="encBuffer" data-encoding="bufferSeconds" type="number" min=".1" max="30" step=".1"></label>
+      <label>ProRes 规格<select id="encProresProfile" data-encoding="proresProfile" data-number><option value="0">代理</option><option value="1">轻量</option><option value="2">标准</option><option value="3">高质量</option><option value="4">4444</option><option value="5">4444 高质量</option></select><small>当前作品为不透明画面，4444 输出不额外生成透明通道。</small></label>
+      <label>FFV1 版本<select id="encFfv1Level" data-encoding="ffv1Level" data-number><option value="1">版本 1 · 兼容</option><option value="3">版本 3 · 分片校验</option></select></label>
+      <h3 class="encoding-section">速度与视频细节</h3>
+      <label>编码速度<select id="encPreset" data-encoding="preset"><option value="ultrafast">极速</option><option value="superfast">超快</option><option value="veryfast">很快</option><option value="faster">较快</option><option value="fast">快速</option><option value="medium">均衡</option><option value="slow">慢速</option><option value="slower">较慢</option><option value="veryslow">很慢</option></select><small>映射到各编码器的速度预设，越慢通常压缩效率越高。</small></label>
+      <label>编码规格<select id="encProfile" data-encoding="profile"><option value="auto">自动</option><option value="baseline">基础 · H.264</option><option value="main">主要</option><option value="high">高 · H.264</option><option value="main10">主要 10 位 · H.265</option></select></label>
+      <label>画面调优<select id="encTune" data-encoding="tune"><option value="auto">默认</option><option value="film">电影画面</option><option value="animation">动画</option><option value="grain">保留颗粒</option><option value="stillimage">静态图像</option><option value="zerolatency">低延迟</option></select></label>
+      <label>关键帧间隔（秒）<input id="encKeyframe" data-encoding="keyframeSeconds" type="number" min="0" max="30" step=".1"><small>0 表示自动决定。</small></label>
+      <label>双向预测帧数量<input id="encBFrames" data-encoding="bFrames" type="number" min="0" max="8" step="1"><small>基础规格固定为 0；硬件可用范围取决于显卡。</small></label>
+      <label>编码线程数<input id="encThreads" data-encoding="threads" type="number" min="0" max="64" step="1"><small>0 表示自动分配。</small></label>
+      <label>硬件前瞻帧数<input id="encLookahead" data-encoding="lookahead" type="number" min="0" max="32" step="1"><small>英伟达硬件编码，可增加延迟及显存占用。</small></label>
+      <label>硬件多遍分析<select id="encMultipass" data-encoding="multipass"><option value="disabled">关闭</option><option value="qres">四分之一分辨率分析</option><option value="fullres">全分辨率分析</option></select></label>
+      <label class="checkbox-label"><input id="encSpatialAq" data-encoding="spatialAq" type="checkbox">空间自适应量化</label>
+      <h3 class="encoding-section">音频编码</h3>
+      <label>音频编码<select id="encAudioCodec" data-encoding="audioCodec"><option value="auto">自动 · 随文件格式</option><option value="aac">AAC</option><option value="opus">Opus</option><option value="mp3">MP3</option><option value="flac">FLAC · 无损</option><option value="alac">ALAC · 无损</option><option value="pcm16">PCM · 16 位</option><option value="pcm24">PCM · 24 位</option><option value="vorbis">Vorbis</option></select><small>无损编码保留处理后的音频，不恢复原文件已丢失的信息。</small></label>
+      <label>音频码率（kbps）<input id="encAudioBitrate" data-encoding="audioBitrateKbps" type="number" min="32" max="512" step="1"><small>32–512，MP3 不超过 320；无损音频无需此项。</small></label>
+      <label>Vorbis 音频质量<input id="encVorbisQuality" data-encoding="vorbisQuality" type="number" min="0" max="10" step=".1"><small>0–10，越大音质越好；使用可变码率。</small></label>
+      <label>音频采样率<select id="encSampleRate" data-encoding="sampleRate" data-number><option value="0">跟随原音频</option><option value="22050">22.05 kHz</option><option value="32000">32 kHz</option><option value="44100">44.1 kHz</option><option value="48000">48 kHz</option><option value="88200">88.2 kHz</option><option value="96000">96 kHz</option></select><small>Opus 固定使用 48 kHz。</small></label>
+      <label>音频声道<select id="encChannels" data-encoding="channels" data-number><option value="0">跟随原音频</option><option value="1">单声道</option><option value="2">立体声</option></select></label>
+    </div>
+    <label class="checkbox-label encoding-faststart"><input id="encFastStart" data-encoding="fastStart" type="checkbox">优化快速起播（将索引放在文件开头）</label>
+    <p id="encodingEstimate" class="modal-tip"></p><p id="encodingError" class="error-text" role="alert"></p>
+    <div class="modal-actions"><button class="button quiet" id="resetEncoding">恢复默认</button><button class="button quiet" data-close="encodingDialog">取消</button><button class="button primary" id="applyEncoding">应用设置</button></div>
+  </dialog>

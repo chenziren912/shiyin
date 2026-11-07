@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https://media.vinyl.local data:; media-src 'self' https://media.vinyl.local; connect-src 'self' https://media.vinyl.local; object-src 'none'; base-uri 'none'; frame-src 'none'">
+  <title>更多设置 · 画面卡片</title>
+  <script src="themes.js"></script>
+  <link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="editor.css"><link rel="stylesheet" href="themes.css">
+  <script src="lyric-layout.js" defer></script><script src="composition.js" defer></script><script src="spectrum.js" defer></script><script src="editor.js" defer></script>
+</head>
+<body class="editor-body">
+  <header class="editor-header">
+    <div><span class="eyebrow">让画面成为你的样子</span><h1>更多设置<span>画面卡片</span></h1></div>
+    <div class="editor-actions"><button class="button quiet" id="undo" title="撤销 Ctrl+Z">撤销</button><button class="button quiet" id="redo" title="重做 Ctrl+Y">重做</button><button class="button quiet" id="resetLayout">重置布局</button><button class="button quiet" id="cancelEditor">取消</button><button class="button primary" id="applyEditor">应用到作品</button></div>
+  </header>
+  <div class="editor-workspace">
+    <section class="editor-stage">
+      <div class="editor-stage-heading"><b>静态帧预览</b><span>拖动卡片调整位置 · 拖动右下角缩放 · 双击编辑内容</span></div>
+      <div class="preview editor-preview" id="preview">
+        <div class="ambient-background"></div><video id="backgroundVideo" muted playsinline preload="metadata" crossorigin="anonymous"></video><div class="preview-shade"></div>
+        <span class="preview-clock" id="previewClock">00:00 / 00:00</span>
+        <div class="record-side"><div class="record-shadow"></div><div class="vinyl" id="vinyl"><div class="vinyl-shine"></div><div class="record-label" id="recordLabel"><div class="label-art"><span>拾</span><i></i><small>让音乐有画面</small></div></div><div class="spindle"></div></div><div class="song-caption"><strong id="previewTitle">你的音乐，即将响起</strong><span id="previewArtist">未知歌手</span></div></div>
+        <div class="lyric-window" id="lyricWindow"><div class="lyric-empty" id="lyricEmpty">纯音乐 · 此刻只听旋律</div><div class="lyric-lines" id="lyricLines"></div></div>
+        <svg class="audio-spectrum" id="audioSpectrum" viewBox="0 0 1670.4 81" preserveAspectRatio="none" role="img" aria-label="当前时刻的音频曲线"><path id="spectrumPath"/></svg>
+        <div class="video-progress"><span id="videoProgressFill"></span></div>
+        <div class="card-overlays" id="cardOverlays"></div>
+      </div>
+      <div class="frame-transport"><span id="frameTime">00:00</span><input type="range" id="frameSeek" min="0" max="1" step="0.01" value="0" aria-label="拖动预览时间轴"><span id="frameDuration">00:00</span></div>
+      <div class="editor-stage-foot"><span id="frameStatus">拖动时间轴查看单帧画面</span><span>方向键微调 · Delete 删除 · Ctrl+Z 撤销</span></div>
+    </section>
+    <aside class="editor-inspector">
+      <h2>画面卡片</h2><p class="inspector-hint">选择卡片后拖动、缩放或双击编辑。</p>
+      <div id="cardList" class="card-list"></div><div class="restore-row"><select id="restoreCard" aria-label="恢复已删除的卡片"></select><button class="button quiet" id="restoreButton">添加</button></div>
+      <div class="selected-heading"><h2 id="selectedTitle">选择一张卡片</h2><button class="text-button" id="editSelected">详细编辑</button></div>
+      <div class="geometry-fields" id="geometryFields"></div><button class="delete-card-button" id="deleteSelected">删除选中卡片</button><p class="inspector-hint">删除的卡片可以通过上方“添加”恢复。</p>
+    </aside>
+  </div>
+  <dialog class="modal card-properties" id="cardDialog">
+    <div class="modal-heading"><div><span class="eyebrow">细节由你决定</span><h2 id="propertiesTitle">编辑卡片</h2></div><button class="icon-button" id="closeProperties" aria-label="关闭详细编辑">×</button></div>
+    <div id="propertyFields"></div><div class="modal-actions"><button class="button quiet" id="resetCard">重置这张卡片</button><button class="button primary" id="doneProperties">完成</button></div>
+  </dialog>
+  <div class="toast" id="toast" role="status"></div>
+</body>
+</html>

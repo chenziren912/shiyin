@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>VinylMV</AssemblyName>
+    <RootNamespace>VinylMV</RootNamespace>
+    <Version>0.9.0</Version>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+    <AppHostDotNetSearch>AppRelative;Global</AppHostDotNetSearch>
+    <AppHostRelativeDotNet>runtime</AppHostRelativeDotNet>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4314.35" />
+    <Content Include="Web\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Renderer\**\*.py" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

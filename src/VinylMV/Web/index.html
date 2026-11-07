@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="zh-CN" class="startup-pending">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https://media.vinyl.local data:; media-src 'self' https://media.vinyl.local; connect-src 'self' https://media.vinyl.local; object-src 'none'; base-uri 'none'; frame-src 'none'">
+  <title>拾音 · 滚动歌词 MV 生成器</title>
+  <script src="themes.js"></script>
+  <link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="themes.css"><link rel="stylesheet" href="ai-video.css">
+  <script src="startup.js" defer></script>
+  <script src="lyric-layout.js" defer></script>
+  <script src="composition.js" defer></script>
+  <script src="spectrum.js" defer></script>
+  <script src="encoding.js" defer></script>
+  <script src="ai-video.js" defer></script>
+  <script src="batch.js" defer></script>
+  <script src="device.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div id="startupScreen" class="startup-screen" role="status" aria-label="正在启动拾音">
+    <button id="startupClose" class="startup-close" aria-label="关闭拾音">×</button>
+    <div class="startup-content"><div class="startup-record"><div class="startup-label"><span>拾</span><i></i></div></div><h1>拾 音</h1><p>让音乐有画面</p><div class="startup-dots" aria-hidden="true"><i></i><i></i><i></i></div><small>正在打开创作工作台</small></div>
+  </div>
+  <svg class="icon-library" aria-hidden="true"><defs>
+    <symbol id="i-disc" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M6.5 8A7 7 0 0 1 9 5.8M17.5 16a7 7 0 0 1-2.5 2.2"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+    <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l11-2v13M9 9l11-2"/><ellipse cx="6" cy="18" rx="3" ry="3"/><ellipse cx="17" cy="16" rx="3" ry="3"/></symbol>
+    <symbol id="i-video" viewBox="0 0 24 24"><rect x="3" y="5" width="14" height="14" rx="3"/><path d="m17 10 5-3v10l-5-3"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3"/><circle cx="15" cy="17" r="3"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h5l3 4h6a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>
+    <symbol id="i-text" viewBox="0 0 24 24"><path d="M4 4h16M12 4v16M8 20h8"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="m8 5 11 7-11 7Z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.5"/><path d="m3 17 5-5 4 4 4-6 5 7"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1 1m12 12 1 1M5 19l1-1M18 6l1-1"/></symbol>
+    <symbol id="i-volume" viewBox="0 0 24 24"><path d="m3 9 5 0 5-5v16l-5-5H3ZM17 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></symbol>
+  </defs></svg>
+
+  <header class="titlebar" id="titlebar">
+    <span class="titlebar-caption">拾音 · 让音乐有画面</span>
+    <div class="window-buttons">
+      <button id="minimize" aria-label="最小化"><span class="minimize-line"></span></button>
+      <button id="maximize" aria-label="最大化或还原"><span class="maximize-box"></span></button>
+      <button id="closeWindow" aria-label="关闭"><svg><use href="#i-close"/></svg></button>
+    </div>
+  </header>
+
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-mark"><svg><use href="#i-disc"/></svg></div><div><strong>拾音</strong><span>滚动歌词 MV 生成器</span></div></div>
+      <div class="nav-caption">工作空间</div>
+      <nav aria-label="主导航">
+        <button class="nav-item active" id="navCreate"><svg><use href="#i-grid"/></svg><span>创作工作台</span><span class="nav-indicator"></span></button>
+        <button class="nav-item" id="navOutput"><svg><use href="#i-folder"/></svg><span>本次导出</span><span class="nav-count" id="outputCount">0</span></button>
+        <button class="nav-item" id="openBatch"><svg><use href="#i-grid"/></svg><span>批量导出</span><span class="nav-count" id="batchCount">0</span></button>
+      </nav>
+      <div class="sidebar-note"><span class="little-orbit"></span><h3>让喜欢的歌<br>被好好看见。</h3><p>把旋律、文字和风景<br>放进同一段时光里。</p></div>
+      <div class="sidebar-bottom">
+        <button class="nav-item" id="openSettings"><svg><use href="#i-settings"/></svg><span>偏好设置</span></button>
+        <button class="environment-card" id="openDependencies"><span class="status-dot checking" id="envDot"></span><span><b id="envTitle">检查本地环境</b><small id="envSubtitle">正在检测渲染组件</small></span><span class="chevron">›</span></button>
+        <div class="version-line"><span>本地渲染 · 开源</span><span>0.9.0</span></div>
+      </div>
+    </aside>
+
+    <main>
+      <div class="breadcrumb">工作空间<span>/</span><b>新建作品</b><span class="privacy-badge"><span></span>音视频留在你的电脑</span></div>
+      <div class="heading"><div><span class="eyebrow">从一首喜欢的歌开始</span><h1>把声音，留在画面里<span>。</span></h1><p>旋转的唱片，流动的歌词。让每一次聆听都有画面。</p></div><button class="button quiet" id="helpButton"><svg><use href="#i-info"/></svg>使用说明</button></div>
+      <div class="steps" aria-label="创作步骤">
+        <div class="step current" id="step1"><span class="step-number">01</span><b>导入音乐</b><small>匹配歌词与封面</small></div><span class="step-connector"></span>
+        <div class="step" id="step2"><span class="step-number">02</span><b>选择背景</b><small>为旋律找到风景</small></div><span class="step-connector"></span>
+        <div class="step" id="step3"><span class="step-number">03</span><b>调整与生成</b><small>完成你的音乐影像</small></div>
+      </div>
+
+      <div class="workspace" id="workspace">
+        <section class="stage-column" aria-label="素材和预览">
+          <div class="source-grid">
+            <button class="source-card" id="pickAudio"><span class="source-icon"><svg><use href="#i-music"/></svg></span><span class="source-copy"><small>音乐素材</small><b id="audioName">选择一首音乐</b><span id="audioMeta">MP3 / FLAC / WAV 等 · 自动匹配歌词</span></span><span class="source-plus"><svg><use href="#i-plus"/></svg></span></button>
+            <button class="source-card" id="pickBackground"><span class="source-icon video-icon"><svg><use href="#i-video"/></svg></span><span class="source-copy"><small>背景视频</small><b id="backgroundName">添加你的风景</b><span id="backgroundMeta">MP4 / MKV / MOV 等 · 自动循环</span></span><span class="source-plus"><svg><use href="#i-plus"/></svg></span></button>
+          </div>
+          <div class="preview-heading"><h2><span class="live-dot"></span>画面预览</h2><div><button class="text-button" id="moreSettings"><svg><use href="#i-settings"/></svg>更多设置</button><button class="text-button" id="pickCover"><svg><use href="#i-image"/></svg>更换封面</button><span class="aspect-label">16:9</span></div></div>
+          <div class="preview" id="preview">
+            <div class="ambient-background"></div><video id="backgroundVideo" muted playsinline loop preload="metadata" crossorigin="anonymous"></video><div class="preview-shade"></div>
+            <span class="preview-clock" id="previewClock">00:00 / 00:00</span>
+            <div class="record-side"><div class="record-shadow"></div><div class="vinyl" id="vinyl"><div class="vinyl-shine"></div><div class="record-label" id="recordLabel"><div class="label-art"><span>拾</span><i></i><small>让音乐有画面</small></div></div><div class="spindle"></div></div><div class="song-caption"><strong id="previewTitle">你的音乐，即将响起</strong><span id="previewArtist">选择音乐，开启这一张唱片</span></div></div>
+            <div class="lyric-window" id="lyricWindow"><div class="lyric-empty" id="lyricEmpty"><span>那些藏在旋律里的话</span><strong>将在这里，缓缓流动</strong><span>导入音乐后自动寻找时间轴歌词</span></div><div class="lyric-lines" id="lyricLines"></div></div>
+            <svg class="audio-spectrum" id="audioSpectrum" viewBox="0 0 1670.4 81" preserveAspectRatio="none" role="img" aria-label="随音乐变化的音频曲线"><path id="spectrumPath"/></svg>
+            <div class="video-progress"><span id="videoProgressFill"></span></div>
+          </div>
+          <div class="transport"><button class="play-button" id="playButton" aria-label="播放预览" disabled><svg><use href="#i-play"/></svg></button><span id="transportTime">00:00</span><input id="seek" type="range" min="0" max="1" value="0" step="0.01" aria-label="预览播放进度" disabled><span id="transportDuration">00:00</span><div class="transport-divider"></div><span class="preview-quality" id="previewQuality">1080P · 30 帧</span></div>
+          <div class="lyrics-toolbar"><div><span class="status-dot" id="lyricDot"></span><span id="lyricStatus">等待导入音乐</span></div><div><button class="text-button" id="openLyricSearch"><svg><use href="#i-search"/></svg>查找歌词</button><button class="text-button" id="importLyrics"><svg><use href="#i-text"/></svg>导入歌词</button><button class="text-button" id="editLyrics">编辑</button></div></div>
+          <div class="stage-footnote"><svg><use href="#i-info"/></svg><span id="previewNote">预览与输出采用相同布局。封面优先读取音乐内嵌图片。</span></div>
+        </section>
+
+        <aside class="adjustments" aria-label="调整与导出">
+          <div class="panel-header"><h2><svg><use href="#i-settings"/></svg>调整与导出</h2><div class="panel-header-actions"><button class="text-button" id="openEncodingPanel" aria-controls="encodingDialog" disabled>编码设置</button><button class="text-button" id="resetSettings">重置</button></div></div>
+          <div class="panel-section">
+            <label class="range-label" for="volume"><span><svg><use href="#i-volume"/></svg>音乐音量</span><output id="volumeValue">100<span>%</span></output></label><input type="range" id="volume" min="0" max="1000" value="100" step="1"><div class="range-ticks"><span>0%</span><span>1000%</span></div><p class="field-hint" id="volumeHint">保持原声，保留每一处细节</p>
+            <label class="range-label brightness-label" for="brightness"><span><svg><use href="#i-sun"/></svg>背景亮度</span><output id="brightnessValue">45<span>%</span></output></label><input type="range" id="brightness" min="0" max="100" value="45" step="1"><div class="range-ticks"><span>更暗</span><span>更亮</span></div>
+          </div>
+          <div class="panel-section typography-section"><div class="section-label">字幕与画质</div><label class="checkbox-label spectrum-setting"><input type="checkbox" id="showSpectrum" checked><span>音频曲线<small>自动跟随音乐，显示在进度条上方</small></span></label><div class="inline-field"><label for="fontSize">字幕大小</label><div class="number-unit"><input id="fontSize" type="number" min="8" max="200" value="44"><span>像素</span></div></div><div class="inline-field"><label for="resolution">输出画质</label><select id="resolution"><option value="1080">高清 · 1080P</option><option value="720">标准 · 720P</option><option value="480">流畅 · 480P</option></select></div><div class="inline-field"><label for="fps">视频帧率</label><select id="fps"><option value="30">30 帧 / 秒</option><option value="24">24 帧 / 秒</option><option value="60">60 帧 / 秒</option></select></div></div>
+          <div class="panel-section encoding-entry"><div><span class="section-label">导出编码</span></div><p id="encodingSummary"></p></div><div class="panel-section output-section"><div class="section-label">保存作品</div><label class="field-label" for="outputDirectory">输出目录</label><div class="folder-field"><input id="outputDirectory" type="text" readonly placeholder="选择保存位置"><button id="pickOutput" aria-label="选择输出目录"><svg><use href="#i-folder"/></svg></button></div><label class="field-label" for="fileName">文件名称</label><input class="text-input" id="fileName" type="text" value="我的音乐影像.mp4" maxlength="180"><div class="output-format"><span id="outputContainer">MP4 视频</span><span id="outputCodec">H.264 / AAC</span></div></div>
+          <div class="generate-section"><button class="generate-button" id="generateButton"><svg><use href="#i-disc"/></svg><span>生成音乐影像</span><svg class="generate-arrow"><use href="#i-arrow"/></svg></button><span>本地合成 · 无水印 · 无需密钥</span></div>
+        </aside>
+      </div>
+      <footer class="main-footer"><span>每一首歌，都值得拥有自己的画面。</span><span>拾音 · 为音乐而生</span></footer>
+    </main>
+  </div>
+
+  <dialog id="dependenciesDialog" class="modal dependency-modal"><div class="modal-heading"><div><span class="eyebrow">准备开始创作</span><h2>本地渲染环境</h2></div><button class="icon-button" data-close="dependenciesDialog" aria-label="关闭"><svg><use href="#i-close"/></svg></button></div><p class="modal-description">自动检测现有组件。缺失时，点击确定下载并安装到当前用户目录。</p><div id="dependencyList"></div><div class="download-box" id="downloadBox" hidden><div><b id="downloadName">准备下载</b><span id="downloadPercent"></span></div><progress id="downloadProgress" max="100" value="0"></progress><p id="downloadStats"></p><small id="downloadStatus"></small></div><p class="modal-tip">下载低于 5 MB/s 时自动增加线程；连续 10 次增加线程带来的增速不超过 200 KB/s 时停止增加，最多 32 线程。服务端不支持分段时自动使用单线程。</p><div class="modal-actions"><button class="button quiet" id="refreshDependencies">重新检测</button><button class="button quiet" id="cancelDownload" hidden>取消下载</button><button class="button primary" id="installDependencies">确定，下载并安装</button></div></dialog>
+
+  <dialog id="lyricsDialog" class="modal lyrics-modal"><div class="modal-heading"><div><span class="eyebrow">让文字跟随旋律</span><h2>查找时间轴歌词</h2></div><button class="icon-button" data-close="lyricsDialog" aria-label="关闭"><svg><use href="#i-close"/></svg></button></div><p class="modal-description">使用 LRCLIB 免费公开歌词库，无需账户或密钥。不同录音版本的时间轴可能不同，请试听确认。</p><form class="search-form" id="lyricsSearchForm"><input class="text-input" id="lyricsQuery" placeholder="输入歌名、歌手进行搜索" maxlength="180" aria-label="歌词搜索关键词"><button class="button primary" type="submit"><svg><use href="#i-search"/></svg>搜索</button></form><div class="search-results" id="lyricsResults"><p class="empty-message">选择音乐后，会先根据歌曲标签自动匹配。</p></div><div class="modal-actions"><label class="checkbox-label"><input type="checkbox" id="instrumental">此曲为纯音乐，不显示歌词</label><button class="button quiet" id="importLyricsFromDialog">导入本地 LRC</button></div></dialog>
+
+  <dialog id="editDialog" class="modal lyrics-modal"><div class="modal-heading"><div><span class="eyebrow">微调每一句的出现时刻</span><h2>编辑歌词</h2></div><button class="icon-button" data-close="editDialog" aria-label="关闭"><svg><use href="#i-close"/></svg></button></div><p class="modal-description">每行格式：[00:12.30]歌词内容。保留时间轴即可直接修改文字。</p><textarea id="lyricsEditor" spellcheck="false" aria-label="LRC 歌词内容" placeholder="[00:12.30]第一句歌词&#10;[00:18.50]下一句歌词"></textarea><div class="offset-field"><label for="lyricOffset">整体时间偏移</label><input id="lyricOffset" type="number" min="-60" max="60" step="0.1" value="0"><span>秒（正值延后，负值提前）</span></div><div class="modal-actions"><span id="editValidation" class="muted">支持 UTF-8 和 GBK 歌词文件</span><button class="button primary" id="saveLyrics">保存歌词</button></div></dialog>
+
+  <dialog id="settingsDialog" class="modal">
+    <div class="modal-heading"><div><span class="eyebrow">让创作更顺手</span><h2>偏好设置</h2></div><button class="icon-button" data-close="settingsDialog" aria-label="关闭"><svg><use href="#i-close"/></svg></button></div>
+    <section class="theme-settings"><h3 id="themeTitle">软件主题色</h3><p>调整按钮、面板与窗口的界面配色，选择后立即生效并自动保存。支持方向键切换。</p><div id="themeChoices" class="theme-grid" role="radiogroup" aria-labelledby="themeTitle"></div><p id="themeSelection" aria-live="polite"></p></section>
+    <div class="settings-item"><div><b>默认字幕大小</b><p>按 1080P 画面定义，其他分辨率同比缩放。</p></div><div class="number-unit"><input id="defaultFontSize" type="number" min="8" max="200" value="44"><span>像素</span></div></div>
+    <div class="settings-item"><div><b>依赖组件</b><p>检查 FFmpeg、Python 的安装状态。</p></div><button class="button quiet" id="settingsDependencies">管理组件</button></div>
+    <div class="settings-item"><div><b>设备与编码性能</b><p>查看 CPU、GPU 编码支持和短片测速结果。</p></div><button class="button quiet" id="settingsDevice">检测与测速</button></div>
+    <div class="about-box"><div class="brand-mark"><svg><use href="#i-disc"/></svg></div><div><b>拾音 · 滚动歌词 MV 生成器</b><p>0.9.0 · MIT 开源许可<br>WebView2 界面 · FFmpeg 本地渲染 · Python 标准库</p></div></div>
+    <div class="modal-actions"><span class="muted">设置自动保存在本机</span><button class="button primary" data-close="settingsDialog">完成</button></div>
+  </dialog>
+
+  <dialog id="renderDialog" class="modal render-modal"><div class="modal-heading"><div><span class="eyebrow">把喜欢，做成一段影像</span><h2 id="renderTitle">正在生成作品</h2></div><button class="icon-button" data-close="renderDialog" aria-label="收起"><svg><use href="#i-close"/></svg></button></div><div class="render-art" id="renderArt"><svg><use href="#i-disc"/></svg></div><strong class="render-percent" id="renderPercent">0%</strong><p class="render-message" id="renderMessage">正在准备渲染画面</p><progress id="renderProgress" max="100" value="0"></progress><p class="render-path" id="renderPath"></p><div class="modal-actions" id="renderActions"><button class="button quiet" id="cancelRender">停止生成</button><button class="button quiet" data-close="renderDialog">后台生成</button></div><div class="modal-actions" id="finishedActions" hidden><button class="button quiet" id="showOutput"><svg><use href="#i-folder"/></svg>打开所在位置</button><button class="button primary" id="playOutput"><svg><use href="#i-play"/></svg>播放作品</button></div></dialog>
+
+  <dialog id="helpDialog" class="modal"><div class="modal-heading"><div><span class="eyebrow">三步完成一支 MV</span><h2>使用说明</h2></div><button class="icon-button" data-close="helpDialog" aria-label="关闭"><svg><use href="#i-close"/></svg></button></div><ol class="help-list"><li><b>导入音乐文件</b><p>优先读取同名 LRC、内嵌歌词和封面，随后根据歌名、歌手、专辑和时长匹配公开歌词库。</p></li><li><b>选择背景视频</b><p>短视频自动循环至歌曲结束。也可保留纯色背景，或手动更换唱片封面。</p></li><li><b>调整并生成</b><p>设置音量、背景亮度、字幕大小和保存位置。预览确认后生成视频，右侧歌词随时间滚动。</p></li></ol><p class="modal-tip">在线歌词库无法覆盖每首歌。找不到匹配版本时可导入本地 LRC；仅有纯文本的歌词无法提供准确时间轴。软件只向歌词服务发送歌曲标签，音视频由本机处理。</p><div class="modal-actions"><button class="button primary" data-close="helpDialog">开始创作</button></div></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <audio id="audio" preload="metadata" crossorigin="anonymous"></audio>
+  <datalist id="genreSuggestions"><option value="流行"><option value="摇滚"><option value="电子"><option value="民谣"><option value="古典"><option value="爵士"><option value="嘻哈"><option value="纯音乐"><option value="氛围"><option value="乡村"><option value="原声"><option value="舞曲"></datalist>
+  <dialog id="batchDialog" class="modal batch-modal">
+    <div class="modal-heading"><div><span class="eyebrow">让每一首歌找到自己的风景</span><h2>批量导出</h2></div><div class="panel-header-actions"><button id="batchAiSettings" class="button quiet" data-batch-edit>AI 背景视频</button><button id="batchExportSettings" class="button quiet" data-batch-edit>导出设置</button><button class="icon-button" data-close="batchDialog" aria-label="收起批量导出">×</button></div></div>
+    <p id="batchPolicySummary" class="modal-description"></p>
+    <div class="batch-layout"><section class="batch-main">
+      <div class="batch-tabs"><button id="batchQueueTab" class="active">音乐与导出队列</button><button id="batchLibraryTab">视频库</button></div>
+      <section id="batchQueuePane">
+        <div class="batch-toolbar"><button id="batchImportMusic" class="button primary" data-batch-edit>批量选择音乐</button><button id="batchAssign" class="button quiet" data-batch-edit>重新分配背景</button><button id="batchRemove" class="button quiet" data-batch-edit>移除选中</button></div>
+        <div class="batch-bulk"><input id="batchMusicGenre" list="genreSuggestions" placeholder="音乐风格，多个用逗号分隔" aria-label="选中音乐的风格" data-batch-edit><button id="batchApplyMusicGenre" class="button quiet" data-batch-edit>设置选中音乐风格</button></div>
+        <div class="batch-table-scroll"><table class="batch-table"><thead><tr><th><input id="batchSelectAll" type="checkbox" aria-label="选择全部音乐" data-batch-edit></th><th>音乐 / 风格</th><th>已分配背景</th><th>导出文件 / 格式</th><th>任务状态</th></tr></thead><tbody id="batchRows"></tbody></table><p id="batchEmpty" class="empty-message">一次选择多首音乐，即可开始准备批量作品。</p></div>
+      </section>
+      <section id="batchLibraryPane" hidden>
+        <div class="batch-toolbar"><button id="batchImportVideos" class="button primary" data-batch-edit>导入视频库</button><button id="batchRemoveVideos" class="button quiet" data-batch-edit>从库中移除选中</button></div>
+        <div class="batch-bulk"><input id="batchVideoGenre" list="genreSuggestions" placeholder="适合的音乐风格，支持多个" aria-label="选中视频的适用风格" data-batch-edit><button id="batchApplyVideoGenre" class="button quiet" data-batch-edit>设置选中视频风格</button></div>
+        <p class="field-hint">视频与风格会保存到本机。留空表示未分类，仍可参与全库随机分配。</p>
+        <div class="batch-table-scroll"><table class="batch-table"><thead><tr><th><input id="librarySelectAll" type="checkbox" aria-label="选择全部视频" data-batch-edit></th><th>视频文件</th><th>适合的音乐风格</th><th>可用状态</th></tr></thead><tbody id="libraryRows"></tbody></table><p id="libraryEmpty" class="empty-message">先导入视频，再为每个视频填写适合的音乐风格。</p></div>
+      </section>
+      <details id="batchNoticeBox" hidden><summary>导入提示</summary><p id="batchNotice"></p></details>
+    </section><aside class="batch-options">
+      <h3>输出参数</h3><p class="field-hint">调整后点击“应用到选中任务”。新导入的音乐使用当前设置。</p>
+      <label>文件格式<select id="batchContainer" data-batch-edit><option value="mp4">MP4</option><option value="mkv">MKV</option><option value="mov">MOV</option><option value="webm">WebM</option></select></label>
+      <label>输出分辨率<select id="batchResolution" data-batch-edit><option value="1080">1080P</option><option value="720">720P</option><option value="480">480P</option></select></label>
+      <label>视频帧率<select id="batchFps" data-batch-edit><option value="24">24 帧 / 秒</option><option value="30">30 帧 / 秒</option><option value="60">60 帧 / 秒</option></select></label>
+      <button id="batchEncoding" class="button quiet" data-batch-edit>详细编码设置</button><p id="batchEncodingSummary" class="field-hint"></p>
+      <label>文件命名模板<input id="batchPattern" value="{序号} - {歌名}" maxlength="180" data-batch-edit></label><p class="field-hint">支持 {序号}、{歌名}、{歌手}、{原文件名}、{风格}；格式后缀自动添加。</p>
+      <button id="batchApplySettings" class="button quiet" data-batch-edit>应用到选中任务</button>
+      <label>统一输出目录<div class="folder-field"><input id="batchOutputDirectory" readonly placeholder="选择保存位置"><button id="batchPickOutput" aria-label="选择批量输出目录" data-batch-edit><svg><use href="#i-folder"/></svg></button></div></label>
+      <p class="field-hint">画面布局、字号、亮度与音量使用主工作台当前设置；每首歌使用自己的封面、歌名和歌手。WebM 可选择 AV1 / VP9 / VP8 与 Opus / Vorbis；Opus 使用 48 kHz。</p>
+    </aside></div>
+    <div class="batch-footer"><div><b id="batchSummary" role="status">尚未添加音乐</b><p id="batchResourceStatus" class="field-hint" role="status"></p><progress id="batchTotalProgress" max="100" value="0" aria-label="批量总进度"></progress><p id="batchError" class="error-text" role="alert"></p></div><button id="batchRetryFailed" class="button quiet" data-batch-edit>重试失败任务</button><button id="batchStop" class="button quiet" hidden>停止批量导出</button><button id="batchStart" class="button primary" data-batch-edit>开始导出选中任务</button></div>
+  </dialog>
+  <dialog id="batchSettingsDialog" class="modal batch-settings-modal" aria-labelledby="batchSettingsTitle">
+    <div class="modal-heading"><div><span class="eyebrow">让队列按你的习惯运行</span><h2 id="batchSettingsTitle">批量导出设置</h2></div><button class="icon-button" data-close="batchSettingsDialog" aria-label="取消批量导出设置">×</button></div>
+    <p class="modal-description">应用后保存到本机，供当前队列与后续批量任务使用。</p>
+    <section class="batch-policy-section"><h3>设备优化与并发导出</h3>
+      <label class="checkbox-label"><input id="batchAutoEncoder" type="checkbox" checked>根据实测性能自动选择 CPU / GPU 编码</label>
+      <div class="batch-policy-grid"><label>最多同时导出<input id="batchMaxParallel" type="number" min="1" max="16" step="1" value="3"></label><label>增加任务的占用上限（%）<input id="batchResourceThreshold" type="number" min="50" max="95" step="1" value="85"></label></div>
+      <p class="field-hint">默认最多 3 个任务。先使用测速更快的编码器，再根据 CPU 与 GPU 占用逐步增加任务，优先分配给占用较低的一侧；合成画面仍需要 CPU。无法读取占用时保守运行，设为 1 可逐首导出。未同意设备检测时使用手动编码。</p>
+      <button id="batchDeviceTest" class="button quiet">设备信息与编码测速</button><p class="field-hint">同意检测后，首次使用某种格式、码率、分辨率等参数时补充测速，后续复用对应记录；不会自动改变所选编码格式或码率。不同编码器的同一画质值不保证相同画质。</p>
+    </section>
+    <section class="batch-policy-section"><h3>背景视频分配</h3><div class="batch-policy-grid">
+      <label>选择范围<select id="batchBackgroundScope"><option value="genre">优先匹配音乐风格</option><option value="all">全部可用视频</option></select></label>
+      <label>选择方式<select id="batchBackgroundOrder"><option value="random">随机选择</option><option value="sequence">按视频库顺序循环</option></select></label>
+      <label id="batchNoMatchField">没有匹配风格时<select id="batchBackgroundNoMatch"><option value="library">从全部可用视频选择</option><option value="unassigned">暂不分配，等待调整</option></select></label>
+      <label class="checkbox-label"><input id="batchAvoidRepeat" type="checkbox">优先使用较少分配的视频</label>
+    </div><p class="field-hint">减少重复仅在本次队列的候选视频中生效，仍优先遵循风格。修改分配设置会重新分配未完成任务；已完成作品保留。没有背景的任务需调整后才能开始导出。</p></section>
+    <section class="batch-policy-section"><h3>歌词处理</h3>
+      <label class="checkbox-label"><input id="batchSearchLyrics" type="checkbox" checked>自动在线匹配缺失的时间轴歌词</label>
+      <p class="field-hint">先使用歌曲自带或同名 LRC 歌词；在线匹配无结果或失败时，使用下方处理方式。</p>
+      <label>仍没有可用歌词时<select id="batchMissingLyrics"><option value="instrumental">歌词区域留空</option><option value="message">显示自定义固定文字</option><option value="skip">跳过此音乐</option></select></label>
+      <label id="batchMissingTextField">固定文字<textarea id="batchMissingText" rows="3" maxlength="300" placeholder="该歌曲暂无可用歌词"></textarea><span class="field-hint">最多 300 字，支持换行。整首歌静态显示，沿用歌词卡片的字号、位置和配色；删除歌词卡片后不会显示。</span></label>
+    </section>
+    <section class="batch-policy-section"><h3>任务遇到错误时</h3><label class="checkbox-label"><input id="batchContinueOnError" type="checkbox" checked>单首失败后继续导出后续音乐</label><p class="field-hint">关闭后，首次生成失败即停止新增任务，已经运行的任务会继续完成。按歌词设置跳过音乐不计为失败。同名输出会自动添加序号，保留已有文件。</p></section>
+    <p id="batchSettingsError" class="error-text" role="alert"></p>
+    <div class="modal-actions"><button id="batchSettingsDefaults" class="button quiet">恢复默认</button><button class="button quiet" data-close="batchSettingsDialog">取消</button><button id="batchSettingsApply" class="button primary">应用设置</button></div>
+  </dialog>
+  <dialog id="devicePrompt" class="modal" aria-labelledby="devicePromptTitle">
+    <div class="modal-heading"><div><span class="eyebrow">为这台电脑选择合适的导出方式</span><h2 id="devicePromptTitle">检测设备，优化导出体验？</h2></div></div>
+    <p class="modal-description">识别本机 CPU、GPU 与可用编码器，使用短片实测当前格式、码率等参数的编码速度。批量导出据此自动选择更快的可用方案。</p>
+    <p class="modal-tip">测速会短暂使用 CPU 和 GPU，可以随时停止。稍后也可从偏好设置或批量导出设置中开启。</p>
+    <p id="devicePromptError" class="error-text" role="alert"></p>
+    <div class="modal-actions"><button id="deviceDefer" class="button quiet">暂不检测</button><button id="deviceAccept" class="button primary">现在检测</button></div>
+  </dialog>
+  <dialog id="deviceDialog" class="modal device-modal" aria-labelledby="deviceTitle">
+    <div class="modal-heading"><div><span class="eyebrow">让每个任务用上合适的设备</span><h2 id="deviceTitle">设备与编码性能</h2></div><button id="deviceClose" class="icon-button" aria-label="关闭设备检测">×</button></div>
+    <p id="deviceHardware" class="modal-description">正在读取设备信息…</p><p id="deviceSupported" class="field-hint"></p>
+    <div class="device-profile-grid">
+      <label>文件格式<select id="deviceContainer"><option value="mp4">MP4</option><option value="mkv">MKV</option><option value="mov">MOV</option><option value="webm">WebM</option></select></label>
+      <label>分辨率<select id="deviceResolution"><option value="480">480P</option><option value="720">720P</option><option value="1080">1080P</option></select></label>
+      <label>帧率<select id="deviceFps"><option value="24">24 帧 / 秒</option><option value="30">30 帧 / 秒</option><option value="60">60 帧 / 秒</option></select></label>
+      <label>批量并发上限<input id="deviceParallel" type="number" min="1" max="16" value="3"></label>
+    </div>
+    <div class="device-encoding"><button id="deviceEncoding" class="button quiet">测速编码参数</button><p id="deviceEncodingSummary" class="field-hint"></p></div>
+    <p id="deviceSpectrumSummary" class="field-hint"></p>
+    <p class="field-hint">测速使用三秒合成音频与画面，按当前配置执行音频解码、FFT 分析和音频曲线绘制，并实际合成到视频。合计耗时 = 曲线分析与绘制指令生成 + 画面合成及编码；同一份分析耗时计入每个编码器，综合帧率用于自动选择。关闭曲线时跳过分析。自动 CPU 线程数按并发上限分配，指定线程数保持不变。测速不修改作品参数；实际 MV 仍受背景与其他卡片影响。</p>
+    <label class="device-history">已保存的测速记录<select id="deviceHistory"><option value="">尚无测速记录</option></select></label>
+    <p id="deviceResultTitle" class="field-hint"></p>
+    <div class="device-table-scroll"><table class="batch-table device-table"><thead><tr><th>设备 / 编码器</th><th>结果</th><th>曲线分析</th><th>综合帧率</th><th>合计耗时</th></tr></thead><tbody id="deviceResults"></tbody></table></div>
+    <p id="deviceRecommendation" class="device-recommendation"></p>
+    <progress id="deviceProgress" max="1" value="0" aria-label="设备测速进度"></progress><p id="deviceMessage" class="field-hint" role="status"></p>
+    <p id="deviceError" class="error-text" role="alert"></p>
+    <div class="modal-actions"><button id="deviceStop" class="button quiet" hidden>停止测速</button><button id="deviceRun" class="button primary">同意并开始测速</button></div>
+  </dialog>
+  <dialog id="mediaImportDialog" class="modal media-import-modal">
+    <div class="modal-heading"><div><span class="eyebrow">准备你的创作素材</span><h2>正在导入素材</h2></div></div>
+    <p id="mediaImportMessage" class="modal-description" role="status" aria-live="polite">正在读取媒体信息…</p>
+    <div class="media-import-meter"><progress id="mediaImportProgress" class="media-import-progress" max="1" aria-label="素材导入进度"></progress><span class="media-import-busy" aria-hidden="true"></span></div>
+    <p id="mediaImportCount" class="media-import-count" role="status">正在处理当前素材…</p>
+    <p class="modal-tip">首次打开部分格式时需要准备预览，完成后可复用。导出使用原始素材。</p>
+    <div class="modal-actions"><button class="button quiet" id="cancelMediaImport">取消导入</button></div>
+  </dialog>
+
+</body>
+</html>

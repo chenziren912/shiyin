@@ -1,0 +1,71 @@
+<dialog id="aiVideoDialog" class="modal ai-video-modal" aria-labelledby="aiVideoTitle">
+  <div class="modal-heading"><div><span class="eyebrow">为每一首音乐创作风景</span><h2 id="aiVideoTitle">AI 背景视频</h2></div><button class="icon-button" data-ai-close aria-label="取消 AI 背景设置">×</button></div>
+  <p class="modal-description">生成一段短视频，导出时自动循环铺满歌曲。服务费用与可用模型以你填写的 API 服务为准。</p>
+  <div class="ai-settings-layout"><nav class="ai-settings-tabs" aria-label="AI 设置分类">
+    <button data-ai-tab="connection" class="active" type="button">接口与策略</button><button data-ai-tab="picture" type="button">视频与画面</button><button data-ai-tab="prompt" type="button">提示词设计</button><button data-ai-tab="optimizer" type="button">文字模型优化</button><button data-ai-tab="runtime" type="button">运行与保存</button><button data-ai-tab="advanced" type="button">高级接口</button>
+  </nav><div class="ai-settings-content">
+    <section data-ai-pane="connection"><h3>使用方式</h3>
+      <label class="checkbox-label"><input data-ai-field="enabled" type="checkbox">批量导出时使用 AI 生成背景</label>
+      <div class="ai-field-grid"><label>生成范围<select data-ai-field="mode"><option value="all">每首音乐生成专属背景</option><option value="missing">仅没有可用视频库背景时生成</option></select></label><label>生成失败时<select data-ai-field="failure"><option value="library">回退已分配的视频库背景</option><option value="skip">跳过此音乐</option><option value="fail">将此任务标记为失败</option></select></label></div>
+      <h3>视频生成接口</h3><div class="ai-field-grid">
+        <label>接口协议<select data-ai-field="protocol"><option value="videos">Videos 标准接口（表单）</option><option value="json">通用 JSON 任务接口</option></select></label>
+        <label>API 根地址<input data-ai-field="baseUrl" type="url" placeholder="https://你的服务地址/v1/"></label>
+        <label>API 密钥<input data-ai-field="apiKey" type="password" autocomplete="new-password" placeholder="填写 API 密钥"></label><label class="checkbox-label"><input id="aiClearKey" type="checkbox">清除已保存的视频密钥</label>
+        <label>视频模型<input data-ai-field="model" list="aiVideoModels" placeholder="填写模型标识"><datalist id="aiVideoModels"></datalist></label><div class="ai-inline-action"><button id="aiReadModels" class="button quiet" type="button">读取模型列表</button><small id="aiModelsStatus" role="status"></small></div>
+      </div><p class="field-hint">根地址可包含版本路径，例如 /v1/。模型列表仅用于读取名称，视频能力由生成时的实际响应确认。密钥使用 Windows 当前用户加密保存，留空保留已有密钥。</p>
+      <p id="aiLoadWarning" class="error-text" role="alert"></p>
+    </section>
+    <section data-ai-pane="picture" hidden><h3>生成参数</h3><div class="ai-field-grid">
+      <label>视频时长（秒）<input data-ai-field="seconds" type="number" min="1" max="60" step="1"></label><label>视频尺寸<input data-ai-field="size" list="aiSizes" placeholder="1280x720"><datalist id="aiSizes"><option value="1280x720"><option value="720x1280"><option value="1792x1024"><option value="1024x1792"><option value="1920x1080"><option value="1024x1024"></datalist></label>
+      <label>帧率<input data-ai-field="fps" type="number" min="8" max="60" step="1"></label><label>随机种子（-1 表示随机）<input data-ai-field="seed" type="number" min="-1" max="2147483647" step="1"></label>
+      <label class="checkbox-label"><input data-ai-field="generateAudio" type="checkbox">让服务端同时生成声音</label><label class="checkbox-label"><input data-ai-field="loop" type="checkbox">优化首尾构图，便于循环</label>
+    </div><p class="field-hint">标准 Videos 使用 4 / 8 / 12 秒及四种标准尺寸。帧率、种子和生成声音需由通用 JSON 请求模板引用；实际支持范围以服务商为准。MV 成片使用所选歌曲作为音轨。</p>
+      <h3>画面方向</h3><div class="ai-field-grid">
+      <label>视觉风格<select data-ai-field="visualStyle"><option value="cinematic">电影质感</option><option value="realistic">写实摄影</option><option value="animation">动画场景</option><option value="illustration">绘画插画</option><option value="abstract">抽象流动</option></select></label>
+      <label>情绪<select data-ai-field="mood"><option value="auto">根据音乐风格选择</option><option value="calm">平静</option><option value="warm">温暖</option><option value="melancholic">忧郁</option><option value="uplifting">明朗</option><option value="dreamy">梦幻</option><option value="dramatic">戏剧张力</option></select></label>
+      <label>镜头运动<select data-ai-field="camera"><option value="locked">固定镜头</option><option value="push">缓慢推进</option><option value="pan">缓慢横移</option><option value="orbit">缓慢环绕</option></select></label>
+      <label>环境动感<select data-ai-field="motion"><option value="subtle">轻柔</option><option value="medium">适中</option><option value="strong">较强</option></select></label>
+      <label class="ai-wide">指定场景<textarea data-ai-field="scene" rows="3" maxlength="3000" placeholder="留空按风格选择，例如月夜湖泊、雨中城市、晨光山谷"></textarea></label><label class="ai-wide">色彩与光线<textarea data-ai-field="palette" rows="2" maxlength="3000" placeholder="留空自动搭配，例如深蓝夜色、柔和暖金高光"></textarea></label>
+    </div></section>
+    <section data-ai-pane="prompt" hidden><h3>为滚动歌词设计的提示词</h3><p class="field-hint">内置提示词组合场景、可观察的动态、镜头、光线与配色，并结合当前黑胶、歌词、时间和进度条的位置预留低干扰区域。可在每首音乐的“AI 提示词”中查看和修改。</p>
+      <div class="ai-field-grid"><label>提示词语言<select data-ai-field="language"><option value="en">英文</option><option value="zh">简体中文</option></select></label><label>最多参考的歌词字符数<input data-ai-field="lyricsLimit" type="number" min="100" max="2000" step="100"></label>
+      <label class="checkbox-label"><input data-ai-field="safeAreas" type="checkbox">根据画面卡片布局预留清晰区域</label><label class="checkbox-label"><input data-ai-field="includeLyrics" type="checkbox">将歌词片段作为意境参考发送</label>
+      <label class="ai-wide">负面提示词<textarea data-ai-field="negativePrompt" rows="3" maxlength="3000"></textarea></label>
+      <label class="ai-wide">自定义提示词模板<textarea data-ai-field="promptTemplate" rows="6" maxlength="12000" placeholder="留空使用内置构图模板"></textarea></label></div>
+      <p class="field-hint">模板变量：{title} 歌名、{artist} 歌手、{genres} 风格、{mood} 情绪、{scene} 场景、{style} 视觉风格、{camera} 镜头、{motion} 动感、{palette} 配色、{duration} 秒数、{aspect} 比例、{layout} 布局、{lyrics} 歌词。歌词需开启上方选项才会提供。</p>
+      <p class="field-hint">接口接收提示词与歌曲文字信息。开启歌词参考后会加入限定长度的歌词；生成流程使用文字，不上传原始音频。</p><button id="aiPreviewDraft" class="button quiet" type="button">预览当前提示词</button>
+    </section>
+    <section data-ai-pane="optimizer" hidden><h3>文字模型润色</h3><label class="checkbox-label"><input data-ai-field="optimize" type="checkbox">生成视频前调用文字模型优化提示词</label><p class="field-hint">文字模型进一步整理画面意境与镜头细节；视频接口收到最终提示词。已有单首自定义提示词会直接使用。</p>
+      <div class="ai-field-grid"><label>文字 API 根地址<input data-ai-field="optimizerBaseUrl" type="url" placeholder="留空使用视频 API 根地址"></label><label>文字模型<input data-ai-field="optimizerModel" placeholder="填写支持对话接口的模型标识"></label>
+      <label>文字 API 密钥<input data-ai-field="optimizerKey" type="password" autocomplete="new-password" placeholder="填写独立密钥"></label><label class="checkbox-label"><input id="aiClearOptimizerKey" type="checkbox">清除已保存的文字密钥</label>
+      <label class="checkbox-label"><input data-ai-field="optimizerUseVideoKey" type="checkbox">使用视频 API 的密钥</label><label class="checkbox-label"><input data-ai-field="optimizerFallback" type="checkbox">润色失败时使用内置提示词</label>
+      <label>对话接口路径<input data-ai-field="optimizerPath" placeholder="chat/completions"></label><label>温度（留空不发送）<input data-ai-field="temperature" type="number" min="0" max="2" step="0.1"></label>
+      <label>最大输出词元<input data-ai-field="maxTokens" type="number" min="100" max="4000" step="100"></label><label>词元参数名<select data-ai-field="tokenField"><option value="max_tokens">max_tokens</option><option value="max_completion_tokens">max_completion_tokens</option></select></label>
+    </div></section>
+    <section data-ai-pane="runtime" hidden><h3>生成队列</h3><div class="ai-field-grid">
+      <label>最多同时生成<input data-ai-field="maxConcurrent" type="number" min="1" max="8" step="1"></label><label>查询间隔（秒）<input data-ai-field="pollSeconds" type="number" min="1" max="60" step="1"></label>
+      <label>单个任务等待上限（分钟）<input data-ai-field="timeoutMinutes" type="number" min="1" max="180" step="1"></label><label>单次网络请求超时（秒）<input data-ai-field="httpTimeoutSeconds" type="number" min="5" max="600" step="1"></label>
+      <label>查询失败重试次数<input data-ai-field="readRetries" type="number" min="0" max="5" step="1"></label><label>单个视频下载上限（MB）<input data-ai-field="downloadLimitMb" type="number" min="1" max="2048" step="1"></label>
+    </div><p class="field-hint">AI 并发还受批量任务总并发数限制。查询与下载可重试；创建视频任务不会因网络异常自动重发。停止本地队列后保留已提交的任务编号，下次优先继续查询；服务端任务可能仍在运行。</p>
+      <h3>文件与复用</h3><label class="checkbox-label"><input data-ai-field="reuseCache" type="checkbox">复用相同歌曲、提示词和参数的已有背景</label><label class="checkbox-label"><input data-ai-field="addToLibrary" type="checkbox">生成完成后加入视频库并标记音乐风格</label>
+      <label class="ai-directory">背景视频保存目录<div class="folder-field"><input data-ai-field="directory" readonly placeholder="默认保存在软件的本地数据目录"><button id="aiPickDirectory" type="button" aria-label="选择 AI 视频保存目录"><svg><use href="#i-folder"/></svg></button></div></label>
+      <p class="field-hint">已生成视频保存在本机；重复导出可复用，已有文件不会被覆盖。更改模型、提示词、镜头或视频参数会匹配新的背景。</p>
+    </section>
+    <section data-ai-pane="advanced" hidden><h3>请求与结果映射</h3><p class="field-hint">不同服务商的协议可能不同。通用 JSON 支持同步返回视频 URL，或创建任务后查询结果。字段路径支持 data.id、data[0].url、/data/id；多个候选可用 | 分隔。</p>
+      <div class="ai-field-grid"><label>创建任务路径<input data-ai-field="createPath"></label><label>查询路径（{id} 为任务编号）<input data-ai-field="pollPath"></label><label>内容下载路径（可留空）<input data-ai-field="contentPath"></label><label>模型列表路径<input data-ai-field="modelsPath"></label>
+      <label>任务编号字段<input data-ai-field="idPath"></label><label>任务状态字段<input data-ai-field="statusPath"></label><label>进度字段（0–100）<input data-ai-field="progressPath"></label><label>视频 URL 字段<input data-ai-field="urlPath"></label><label>成功状态（逗号分隔）<input data-ai-field="successStates"></label><label>失败状态（逗号分隔）<input data-ai-field="failureStates"></label>
+      <label>认证请求头（留空免密钥）<input data-ai-field="authHeader"></label><label>密钥前缀（保留末尾空格）<input data-ai-field="authPrefix"></label>
+      <label class="ai-wide">附加请求头 JSON<textarea data-ai-field="headersJson" rows="3" spellcheck="false"></textarea></label>
+      <label class="ai-wide">通用 JSON 请求模板<textarea data-ai-field="requestJson" rows="6" spellcheck="false"></textarea></label>
+      <label class="ai-wide">Videos 附加表单参数 JSON<textarea data-ai-field="extraJson" rows="3" spellcheck="false"></textarea></label></div>
+      <p class="field-hint">请求模板变量：{model}、{prompt}、{seconds}、{size}、{width}、{height}、{aspect}、{fps}、{seed}、{generateAudio}、{negativePrompt}。值恰为变量时保留数字 / 布尔类型。附加头可引用 {apiKey}。API 密钥只发送给配置的同源接口，不转发给外部视频下载站点。</p>
+    </section>
+  </div></div>
+  <p id="aiVideoError" class="error-text" role="alert"></p><div class="modal-actions"><span id="aiVideoSaveStatus" class="muted" role="status"></span><button id="aiVideoDefaults" class="button quiet" type="button">恢复默认</button><button class="button quiet" data-ai-close type="button">取消</button><button id="aiVideoSave" class="button primary" type="button">保存设置</button></div>
+</dialog>
+<dialog id="aiPromptDialog" class="modal ai-prompt-modal" aria-labelledby="aiPromptTitle">
+  <div class="modal-heading"><div><span class="eyebrow">先看清每一首歌的画面方向</span><h2 id="aiPromptTitle">背景提示词</h2></div><button class="icon-button" data-prompt-close aria-label="关闭提示词">×</button></div>
+  <p id="aiPromptSong" class="modal-description"></p><textarea id="aiPromptText" rows="15" maxlength="16000" aria-label="最终背景视频提示词"></textarea><p id="aiPromptStatus" class="field-hint" role="status"></p>
+  <div class="ai-prompt-tools"><button id="aiPromptRebuild" class="button quiet" type="button">重新生成内置提示词</button><button id="aiPromptOptimize" class="button quiet" type="button">调用文字模型优化</button><button id="aiPromptCancelRequest" class="button quiet" type="button" hidden>停止优化</button></div>
+  <p id="aiPromptError" class="error-text" role="alert"></p><div class="modal-actions"><button class="button quiet" data-prompt-close type="button">关闭</button><button id="aiPromptApply" class="button primary" type="button">使用这份提示词</button></div>
+</dialog>

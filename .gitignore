@@ -1,0 +1,16 @@
+.tools/
+**/bin/
+**/obj/
+artifacts/
+.test-output/
+__pycache__/
+*.pyc
+*.user
+*.log
+
+# Only the redistributable demo files belong in the public repository.
+/Music/*
+!/Music/shiyin-demo.mp3
+!/Music/shiyin-demo.lrc
+/Videos/*
+!/Videos/shiyin-demo.mp4
